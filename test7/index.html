@@ -1,0 +1,101 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>抽奖</title>
+</head>
+<style>
+.demo{width:300px; margin:60px auto; text-align:center} 
+#roll{height:32px; line-height:32px; font-size:24px; color:#f30;text-align: center;} 
+.btn{width:80px; height:26px; line-height:26px;border:1px solid #d3d3d3; cursor:pointer} 
+#stop{display:none} 
+#result{margin-top:20px; line-height:24px; font-size:16px; text-align:center} 
+p{text-align: center;margin-top: 40px;}
+.number{font-size:16px;text-align:center;}
+.jp{float:left;width:25%;}
+a{text-decoration:none;color:#000;font-weight:bold;}
+</style>
+<script type="text/javascript" src="./jquery.js"></script>
+<script type="text/javascript">
+$(function(){ 
+  	var _gogo; 
+  	var start_btn = $("#start"); 
+  	var stop_btn = $("#stop");   
+  	start_btn.click(function(){ 
+	    $.getJSON('data.php?action',function(json){ 
+	    	console.log(json);
+	      	if(json){ 
+		        var obj = eval(json);//将JSON字符串转化为对象 
+		        var len = obj.length; 
+		        _gogo = setInterval(function(){ 
+		          	var num = Math.floor(Math.random()*len);//获取随机数 
+		          	var id = obj[num]['id']; //随机id 
+		          	var v = obj[num]['mobile']+' &nbsp; '+obj[num]['name']; //对应的随机号码 
+		          	$("#roll").html(v); 
+		          	$("#mid").val(id); 
+	        	},100); //每隔0.1秒执行一次 
+		        stop_btn.show(); 
+		        start_btn.hide(); 
+		        $("#result").html("");
+	      	}else{ 
+	        	$("#roll").html('系统找不到数据源，请先导入数据。'); 
+	      	} 
+	    }); 
+  	}); 
+  	stop_btn.click(function(){ 
+	  	clearInterval(_gogo); 
+	  	var mid = $("#mid").val(); 
+	  	var jpid=$("#jpid").val();
+	  	$.post("data.php?action=ok",{id:mid,jpid:jpid},function(msg){ 
+		    if(msg==1){ 
+		      	var mobile = $("#roll").html(); 
+		      	$("#result").append("<p>"+mobile+"</p>"); 
+		    } 
+		    stop_btn.hide(); 
+		    start_btn.show(); 
+  		}); 
+	});
+	var jpid=$("#jpid").val();
+	if(jpid==''){
+		$("#jpid").val('4');
+		$("#jpnum").text("四等奖");
+	} 
+	$(".jp").click(function(){
+		var jp=$(this).attr("data-id");
+		if(jp=='1'){
+			$("#jpid").val('1');
+			$("#jpnum").text("一等奖");
+		}else if(jp=='2'){
+			$("#jpid").val('2');
+			$("#jpnum").text("二等奖");
+		}else if(jp=='3'){
+			$("#jpid").val('3');
+			$("#jpnum").text("三等奖");
+		}else if(jp=='4'){
+			$("#jpid").val('4');
+			$("#jpnum").text("四等奖");
+		}		
+	})
+}); 
+</script>
+<body>
+	<div style="margin:0 auto;text-align:center;margin-bottom:80px">
+		<p style="color:red;font-size:21px;font-weight:bold;">号码抽奖</p>
+		<ul style="margin:0 auto;text-align:center;width:50%">
+			<li class="jp" data-id='1'><a href="javascript:void(0);">一等奖</a></li>
+			<li class="jp" data-id="2"><a href="javascript:void(0);">二等奖</a></li>
+			<li class="jp" data-id="3"><a href="javascript:void(0);">三等奖</a></li>
+			<li class="jp" data-id="4"><a href="javascript:void(0);">四等奖</a></li>
+		</ul>
+	</div>
+	<div id="roll"></div>
+	<input type="hidden" id="mid" value=""> 
+	<input type="hidden" id="jpid" value=""> 
+	<p>
+		<input type="button" class="btn" id="start" value="开始"> 
+		<input type="button" class="btn" id="stop" value="停止">
+	</p> 
+	<div class="number"><span id="jpnum"></span>中奖号码</div>
+	<div id="result"></div> 
+</body>
+</html>
